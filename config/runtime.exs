@@ -87,6 +87,10 @@ if config_env() == :prod do
   # How long a DB query may hold a connection before it's killed. Slow storage (e.g. HDD
   # arrays or FUSE-backed paths) plus concurrent indexing can exceed the 15s default
   {database_timeout, _} = Integer.parse(System.get_env("DATABASE_TIMEOUT_MS", "15000"))
+  # How long a write waits for SQLite's lock before failing with "Database busy". The
+  # driver's default, 2s, killed long indexes whenever a download or another job held
+  # the lock for longer, and a failed index starts again from the top
+  {database_busy_timeout, _} = Integer.parse(System.get_env("DATABASE_BUSY_TIMEOUT_MS", "30000"))
   # For running PF in a subdirectory via a reverse proxy
   base_route_path = System.get_env("BASE_ROUTE_PATH", "/")
   enable_ipv6 = String.length(System.get_env("ENABLE_IPV6", "")) > 0
@@ -113,7 +117,8 @@ if config_env() == :prod do
   config :pinchflat, Pinchflat.Repo,
     database: db_path,
     journal_mode: journal_mode,
-    timeout: database_timeout
+    timeout: database_timeout,
+    busy_timeout: database_busy_timeout
 
   config :pinchflat, Pinchflat.PromEx, disabled: !enable_prometheus
 
