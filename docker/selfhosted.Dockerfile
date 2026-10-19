@@ -97,6 +97,7 @@ RUN apt-get update -y && \
       nano \
       python3 \
       pipx \
+      python3-pip \
       jq \
       # unzip is needed for Deno
       unzip \
@@ -110,6 +111,9 @@ RUN apt-get update -y && \
     # yt-dlp
     curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp && \
+    # curl_cffi gives the zipapp browser impersonation, which yt-dlp's standalone
+    # binaries bundle and the zipapp does not
+    pip3 install --no-cache-dir --break-system-packages curl_cffi && \
     yt-dlp -U && \
     # Set the locale
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen && \

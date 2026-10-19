@@ -118,7 +118,11 @@ if config_env() == :prod do
     database: db_path,
     journal_mode: journal_mode,
     timeout: database_timeout,
-    busy_timeout: database_busy_timeout
+    busy_timeout: database_busy_timeout,
+    # BEGIN IMMEDIATE takes the write lock up front, so a transaction that reads
+    # before it writes waits out busy_timeout instead of failing at once with
+    # "Database busy" when another connection is writing
+    default_transaction_mode: :immediate
 
   config :pinchflat, Pinchflat.PromEx, disabled: !enable_prometheus
 

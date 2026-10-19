@@ -9,6 +9,8 @@ Upstream `master` as of 2025-12-16 (five commits past the 2025.9.26 release), pl
 - **yt-dlp's platform-independent zipapp** in the image, in place of per-architecture binaries. This is the maintainer's own fix for the failing arm64 build, taken from the unmerged `ke/fix-arm-builds` branch.
 - **FFmpeg copied from upstream's published images, per architecture and pinned by digest.** The FFmpeg-Builds release the Dockerfile downloaded (`autobuild-2024-07-30-14-10`, pinned for [#347](https://github.com/kieraneglin/pinchflat/issues/347)) has been deleted, so the image no longer built. Both images carry that same FFmpeg build.
 - **SQLite waits 30 s for its lock** (`busy_timeout`) before failing with `Database busy`, where the driver's default is 2 s; `DATABASE_BUSY_TIMEOUT_MS` overrides it. On a large database, long indexes kept failing on that error and starting again from the top.
+- **curl_cffi is installed**, so yt-dlp can impersonate a browser. The standalone yt-dlp binaries bundle it; the zipapp does not, and without it some YouTube downloads fail with HTTP 403.
+- **Transactions begin `IMMEDIATE`** (`default_transaction_mode: :immediate`). A deferred transaction that reads and then writes fails with `Database busy` at once, without waiting out `busy_timeout`, when another connection is writing; Oban's pruner hit this.
 - **The connection checkout timeout is configurable** with `DATABASE_TIMEOUT_MS` (default unchanged at 15 s): upstream PR [#904](https://github.com/kieraneglin/pinchflat/pull/904), unmerged there.
 
 The version is `2025.9.26-fork.N`, so the UI shows which build is running; bump `N` with each deployed change.
@@ -23,4 +25,4 @@ docker build --platform linux/arm64 -f docker/selfhosted.Dockerfile -t pinchflat
 
 ## Keeping up with upstream
 
-`upstream` is a remote. If development resumes, merge `upstream/master` and keep the two changes above unless upstream has made them unnecessary.
+`upstream` is a remote. If development resumes, merge `upstream/master` and keep the changes above unless upstream has made them unnecessary.
