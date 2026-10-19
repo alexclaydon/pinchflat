@@ -6,12 +6,17 @@ ARG DEBIAN_VERSION=bookworm-20250428-slim
 
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
-# FFmpeg comes from upstream's last published image (v2025.9.26): the
+# FFmpeg comes from upstream's published images, per architecture: the
 # FFmpeg-Builds release it was downloaded from (autobuild-2024-07-30-14-10)
-# has been deleted, and newer builds are what #347 pinned away from.
-ARG FFMPEG_IMAGE="ghcr.io/kieraneglin/pinchflat@sha256:01b4f98aabaf3f5fe394213f7a32578c9e84e42080f52e2f8334021a4473b202"
+# has been deleted, and newer builds are what #347 pinned away from. Both
+# images carry that same build: amd64 from v2025.9.26, arm64 from the
+# December 2025 :dev build (v2025.9.26 has no arm64 image).
+ARG FFMPEG_IMAGE_AMD64="ghcr.io/kieraneglin/pinchflat@sha256:01b4f98aabaf3f5fe394213f7a32578c9e84e42080f52e2f8334021a4473b202"
+ARG FFMPEG_IMAGE_ARM64="ghcr.io/kieraneglin/pinchflat@sha256:09ed95d87fba6f95008b1cc6fa2407465c7a2ba1bc51a120aafb12a5c7e20fe7"
 
-FROM ${FFMPEG_IMAGE} AS ffmpeg
+FROM --platform=linux/amd64 ${FFMPEG_IMAGE_AMD64} AS ffmpeg-amd64
+FROM --platform=linux/arm64 ${FFMPEG_IMAGE_ARM64} AS ffmpeg-arm64
+FROM ffmpeg-${TARGETARCH} AS ffmpeg
 
 FROM ${BUILDER_IMAGE} AS builder
 
