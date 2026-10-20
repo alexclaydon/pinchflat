@@ -51,6 +51,8 @@ ENV ERL_FLAGS="+JPperf true"
 
 # install mix dependencies
 COPY mix.exs mix.lock ./
+# Hex's default timeout is a few seconds, which a slow fetch exceeds
+ENV HEX_HTTP_TIMEOUT=120
 RUN mix deps.get --only $MIX_ENV && mkdir config
 
 # copy compile-time config files before we compile dependencies
